@@ -19,6 +19,7 @@
 # standard library imports
 from argparse import ArgumentParser
 import glob
+import logging
 import os.path
 import sys
 
@@ -61,6 +62,14 @@ class CliParse(object):
         parser.add_argument('-d', '--debug', dest='log_level',
                             action='store_const', const='debug', default='warning',
                             help='enable debug output, work on log level DEBUG')
+        levels = [i for i in logging._nameToLevel.keys()
+        if (type(i) == str and i != 'NOTSET')]
+        parser.add_argument('--syslog', nargs='?', default=None,
+                            type=str.upper, action='store',
+                            const='INFO', choices=levels,
+                            help="""log to syslog facility, default: no
+                            logging, INFO if --syslog is specified without
+                            argument""")
         parser.add_argument('--hashtaglist', dest='hashtaglist',
                             help='a list of hashtag to match')
         parser.add_argument('-p', '--populate-cache', action='store_true', default=False,
