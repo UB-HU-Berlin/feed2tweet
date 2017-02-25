@@ -39,8 +39,8 @@ class CliParse(object):
                                 epilog=feed2tweetepilog)
         parser.add_argument('--version', action='version', version=__version__)
         parser.add_argument('-c', '--config',
-                            default=os.getenv('XDG_CONFIG_HOME',
-                                              '~/.config/feed2tweet.ini'),
+                            default=[os.path.join(os.getenv('XDG_CONFIG_HOME', '~/.config'),
+                                                  'feed2tweet.ini')],
                             nargs='+',
                             dest="config",
                             help='Location of config file (default: %(default)s)',
@@ -77,9 +77,10 @@ class CliParse(object):
             sys.exit('You should provide an absolute path for the cache file')    
         # verify if the path to cache file is an absolute path
         # get the different config files, from a directory or from a *.ini style
+        self.opts.config = list(map(os.path.expanduser, self.options.config))
         for element in self.opts.config:
             if element and not os.path.isabs(element):
-                sys.exit('You should provide an absolute path for the config file')    
+                sys.exit('You should provide an absolute path for the config file: %s' % element)
             if os.path.isdir(element):
                 #self.opts.configs = [os.path.join(element, i) for i in os.listdir(element) if i.lower().endswith('.ini')]
                 self.opts.configs = glob.glob(os.path.join(element, '*.ini'))
