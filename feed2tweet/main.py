@@ -20,6 +20,7 @@
 import codecs
 import importlib
 import logging
+import logging.handlers
 import os
 import sys
 
@@ -42,11 +43,28 @@ class Main(object):
     def __init__(self):
         self.main()
 
+    def setup_logging(self, options):
+        if options.syslog:
+            sl = logging.handlers.SysLogHandler(address='/dev/log')
+            sl.setFormatter(logging.Formatter('feed2tweet[%(process)d]: %(message)s'))
+            # convert syslog argument to a numeric value
+            loglevel = getattr(logging, options.syslog.upper(), None)
+            if not isinstance(loglevel, int):
+                raise ValueError('Invalid log level: %s' % loglevel)
+            sl.setLevel(loglevel)
+            logging.getLogger('').addHandler(sl)
+            logging.debug('configured syslog level %s' % loglevel)
+        logging.getLogger('').setLevel(logging.DEBUG)
+        sh = logging.StreamHandler()
+        sh.setLevel(options.log_level.upper())
+        logging.getLogger('').addHandler(sh)
+        logging.debug('configured stdout level %s' % sh.level)
+
     def main(self):
         """The main function."""
         clip = CliParse()
         clioptions = clip.options
-        logging.basicConfig(level=clioptions.log_level.upper(), format='%(message)s')
+        self.setup_logging(clioptions)
         # iterating over the different configuration files
         cfgp = ConfParse(clioptions)
         confs = cfgp.confvalues
