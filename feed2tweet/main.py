@@ -83,7 +83,10 @@ class Main(object):
             # fixing rss2twitter most old bug
             # reverse feed entries because most recent one should be sent as the last one in Twitter
             for feed in feeds:
-                entries = feed['entries'][0:clioptions.limit]
+                # store the patterns by rss
+                if 'patterns' in feed:
+                    patterns = feed['patterns']
+                entries = feed['feed']['entries'][0:clioptions.limit]
                 entries.reverse()
                 # --rss-sections option: print rss sections and exit
                 if clioptions.rsssections:
@@ -155,9 +158,8 @@ class Main(object):
                             if i.startswith('{') and i.endswith('}'):
                                 tmpelement = i.strip('{}')
                                 elements.append(tmpelement)
-
                     # match elements of the tweet format string with available element in the RSS feed
-                    fe = FilterEntry(elements, entry, options)
+                    fe = FilterEntry(elements, entry, options, feed['patterns'], feed['rssobject'])
                     entrytosend = fe.finalentry
                     if entrytosend:
                         tweetwithnotag = tweetformat.format(**entrytosend)
@@ -175,7 +177,7 @@ class Main(object):
                         if entrytosend:
                             logging.warning('Tweet should have been sent: {tweet}'.format(tweet=finaltweet))
                         else:
-                            logging.warning('This rss entry did not meet pattern criteria. Should have not been sent')
+                            logging.debug('This rss entry did not meet pattern criteria. Should have not been sent')
                     else:
                         if entrytosend and not clioptions.populate:
                             logging.debug('sending the following tweet:{tweet}'.format(tweet=finaltweet))

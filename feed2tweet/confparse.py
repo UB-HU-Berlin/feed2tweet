@@ -43,18 +43,24 @@ class ConfParse(object):
             config = SafeConfigParser()
             if not config.read(os.path.expanduser(pathtoconfig)):
                 sys.exit('Could not read config file')
-
-            # get the format of the tweet
+            ###########################
+            # 
+            # the rss section
+            # 
+            ###########################
             section = 'rss'
             if config.has_section(section):
+                ############################
                 # tweet option
+                ############################
                 confoption = 'tweet'
                 if config.has_option(section, confoption):
                     self.tweetformat = config.get(section, confoption)
                 else:
                     sys.exit('You should define a format for your tweet with the keyword "tweet" in the [rss] section')
-
+                ############################
                 # pattern format option
+                ############################
                 options['patterns'] = {}
                 options['patternscasesensitive'] = {}
                 for pattern in ['summary_detail', 'published_parsed', 'guidislink', 'authors', 'links', 'title_detail', 'author', 'author_detail', 'comments', 'published', 'summary', 'tags', 'title', 'link', 'id']:
@@ -71,25 +77,45 @@ class ConfParse(object):
                     if config.has_option(section, currentoption):
                         try:
                             options['patternscasesensitive'][currentoption] = config.getboolean(section, currentoption)
-                        except ValueError as _:
+                        except ValueError as err:
+                            print(err)
                             options['patternscasesensitive'][currentoption] = True
-
-                # check if options['patterns'] always has a counterpart to True in options['patternscasesensitive']
-                for patternoption in options['patterns']:
-                    if patternoption not in options['patternscasesensitive']:
-                        options['patternscasesensitive']['{pattern}_case_sensitive'.format(pattern=patternoption)] = True
-
+                ############################
                 # rsslist
+                ############################
                 feeds = []
+                patterns = []
                 currentoption = 'uri_list'
                 if config.has_option(section, currentoption):
                     rssfile = config.get(section, currentoption)
                     rsslist = open(rssfile, 'r').readlines()
-                    rsslist =  (i.strip() for i in rsslist if i)
-                    for rss in rsslist:
-                        feeds.append(feedparser.parse(rss))
-
+                    for line in rsslist:
+                    #rsslist =  (i.strip() for i in rsslist if i)
+                        line = line.strip()
+                        # split each line in two parts, rss link and a string with the different patterns to look for
+                        confobjects = line.split('|')
+                        if len(confobjects) > 3 or len(confobjects) == 2:
+                            sys.exit('This line in the list of uri to parse is not formatted correctly: {line}'.format(line))
+                        if len(confobjects) == 3:
+                            rss, rssobject, patternstring = line.split('|')
+                        if len(confobjects) == 1:
+                            rss = confobjects[0]
+                            rssobject = ''
+                            patternstring = ''
+                        # split different searched patterns
+                        patterns = [i for i in patternstring.split(self.stringsep) if i]
+                        # retrieve the content of the rss
+                        feed = feedparser.parse(rss)
+                        # check if the rss feed and the rss entry are valid ones
+                        if 'entries' in feed:
+                            if rssobject and rssobject not in feed['entries'][0].keys():
+                                sys.exit('The rss object {rssobject} could not be found in the feed {rss}'.format(rssobject=rssobject, rss=rss))
+                        else:
+                            sys.exit('The rss feed {rss} does not seem to be valid'.format(rss=rss))
+                        feeds.append({'feed': feed, 'patterns': patterns, 'rssobject': rssobject})
+                ############################
                 # uri
+                ############################
                 if not feeds and not self.clioptions.rss_uri:
                     confoption = 'uri'
                     if config.has_option(section, confoption):
@@ -101,7 +127,22 @@ class ConfParse(object):
                 # get the rss feed for rss parameter of [rss] section
                 feed = feedparser.parse(options['rss_uri'])
 
-            # cache section
+                # Don't apply global filter for uri in the uri_list which does not have patterns
+
+
+                #########################################
+                # no_uri_pattern_no_global_pattern option
+                #########################################
+                currentoption = 'no_uri_pattern_no_global_pattern'
+                # default value
+                options['nopatternurinoglobalpattern'] = False
+                if config.has_option(section, currentoption):
+                    options['nopatternurinoglobalpattern'] = config.getboolean(section, currentoption)
+            ###########################
+            # 
+            # the cache section
+            # 
+            ###########################
             section = 'cache'
             if not self.clioptions.cachefile:
                 confoption = 'cachefile'
@@ -125,8 +166,11 @@ class ConfParse(object):
                     options['cache_limit'] = 100
             else:
                 options['cache_limit'] = 100
-
-            # hashtaglist section
+            ###########################
+            # 
+            # the hashtag section
+            # 
+            ###########################
             section = 'hashtaglist'
             if not self.clioptions.hashtaglist:
                 confoption = 'several_words_hashtags_list'
@@ -134,11 +178,17 @@ class ConfParse(object):
                     options['hashtaglist'] = config.get(section, confoption)
                 else:
                     options['hashtaglist'] = False
-
-            # plugins section
+            ###########################
+            # 
+            # the plugins section
+            # 
+            ###########################
             plugins = {}
             section = 'influxdb'
             if config.has_section(section):
+                ##########################################
+                # host, port, user, pass, database options
+                ##########################################
                 plugins[section] = {}
                 for currentoption in ['host','port','user','pass','database']:
                     if config.has_option(section, currentoption):
@@ -153,11 +203,11 @@ class ConfParse(object):
                     if field not in plugins[section]:
                         sys.exit('Parsing error for {field} in the [{section}] section: {field} is not defined'.format(field=field, section=section))
 
-            # storing results of the parsing
+            # create the returned object with previously parsed data
             if feeds:
                 self.confs.append((options, config, self.tweetformat, feeds, plugins))
             else:
-                self.confs.append((options, config, self.tweetformat, [feed], plugins))
+                self.confs.append((options, config, self.tweetformat, [{'feed': feed, 'patterns': [], 'rssobject': ''}], plugins))
         
     @property
     def confvalues(self):
