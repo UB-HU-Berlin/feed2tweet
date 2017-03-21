@@ -48,3 +48,9 @@ Starting from 0.8, Feed2tweet offers the **--rss-sections** command line option 
 
     $ feed2tweet --rss-sections -c feed2tweet.ini
     The following sections are available in this RSS feed: ['title', 'comments', 'authors', 'link', 'author', 'summary', 'links', 'tags', id', 'author_detail', 'published'].
+
+Using syslog
+============
+Starting from 1.0, Feed2tweet is able to send its log to syslog. You can use it with the following command::
+
+    $ feed2tweet --syslog=WARN -c /path/to/feed2tweet.ini
