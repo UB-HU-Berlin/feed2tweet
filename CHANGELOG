@@ -1,6 +1,15 @@
  Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0] - 2017-04-21
+### Added
+- support for pattern matching for each feed in the uri_list file
+- syslog support, contributed by Antoine Beaupré
+- new no_uri_pattern_no_global_pattern parameter in [rss] for not applying global filters when no filter is applied on a specific filter in the uri_list file
+
+### Changed
+- revert to a default path for the configuration file
+
 ## [0.9] - 2016-12-26
 ### Added
 - new uri_list parameter in the configuration file to manager several rss feeds
