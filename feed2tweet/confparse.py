@@ -88,6 +88,9 @@ class ConfParse(object):
                 currentoption = 'uri_list'
                 if config.has_option(section, currentoption):
                     rssfile = config.get(section, currentoption)
+                    rssfile = os.path.expanduser(rssfile)
+                    if not os.path.exists(rssfile) or not os.path.isfile(rssfile):
+                        sys.exit('The path to the uri_list parameter is not valid: {rssfile}'.format(rssfile=rssfile))
                     rsslist = open(rssfile, 'r').readlines()
                     for line in rsslist:
                     #rsslist =  (i.strip() for i in rsslist if i)
@@ -150,8 +153,10 @@ class ConfParse(object):
                     options['cachefile'] = config.get(section, confoption)
                 else:
                     sys.exit('You should provide a {confoption} parameter in the [{section}] section'.format(section=section, confoption=confoption))
-                if not os.path.isabs(options['cachefile']):
-                    sys.exit('You should provide an absolute path to the cache file in the [{section}] section'.format(section=section))
+                options['cachefile'] = os.path.expanduser(options['cachefile'])
+                cachefileparent = os.path.dirname(options['cachefile'])
+                if cachefileparent and not os.path.exists(cachefileparent):
+                    sys.exit('The parent directory of the cache file does not exist: {cachefileparent}'.format(cachefileparent=cachefileparent))
             else:
                 options['cachefile'] = self.clioptions.cachefile
             ### cache limit
@@ -176,6 +181,9 @@ class ConfParse(object):
                 confoption = 'several_words_hashtags_list'
                 if config.has_section(section):
                     options['hashtaglist'] = config.get(section, confoption)
+                    options['hashtaglist'] = os.path.expanduser(options['hashtaglist'])
+                    if not os.path.exists(options['hashtaglist']) or not os.path.isfile(options['hashtaglist']):
+                        sys.exit('The path to the several_words_hashtags_list parameter is not valid: {hashtaglist}'.format(hashtaglist=options['hashtaglist']))
                 else:
                     options['hashtaglist'] = False
             ###########################
