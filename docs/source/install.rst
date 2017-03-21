@@ -12,16 +12,16 @@ From sources
 
 * Install **PIP**::
 
-    	$ wget https://bootstrap.pypa.io/get-pip.py -O - | sudo python3.4
+    	$ wget https://bootstrap.pypa.io/get-pip.py -O - | sudo python3
     
     
 * Install **setuptools** module::    
   
-    $ wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python3.4
+    $ wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python3
     
 Alternatively, Setuptools may be installed to a user-local path::
 	  
-	       $ wget https://bootstrap.pypa.io/ez_setup.py -O - | python3.4 - --user
+	       $ wget https://bootstrap.pypa.io/ez_setup.py -O - | python3 - --user
 
 * Untar the tarball and go to the source directory with the following commands::
 
