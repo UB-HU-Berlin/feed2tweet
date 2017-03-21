@@ -81,17 +81,16 @@ class CliParse(object):
                             dest='rsssections',
                             help='print the available sections of the rss feed to be used in the tweet template')
         self.opts = parser.parse_args()
-        # verify if the path to cache file is an absolute path
-        if self.opts.cachefile and not os.path.isabs(self.opts.cachefile):
-            sys.exit('You should provide an absolute path for the cache file')    
+        # expand the path to the cache file if defined
+        if self.opts.cachefile:
+            self.opts.cachefile = os.path.expanduser(self.opts.cachefile)
         # verify if the path to cache file is an absolute path
         # get the different config files, from a directory or from a *.ini style
         self.opts.config = list(map(os.path.expanduser, self.options.config))
         for element in self.opts.config:
-            if element and not os.path.isabs(element):
-                sys.exit('You should provide an absolute path for the config file: %s' % element)
+            if element and not os.path.exists(element):
+                sys.exit('You should provide an existing path for the config file: %s' % element)
             if os.path.isdir(element):
-                #self.opts.configs = [os.path.join(element, i) for i in os.listdir(element) if i.lower().endswith('.ini')]
                 self.opts.configs = glob.glob(os.path.join(element, '*.ini'))
             else:
                 # trying to glob the path
