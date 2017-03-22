@@ -18,8 +18,10 @@
 
 # standard library imports
 from configparser import SafeConfigParser, NoOptionError, NoSectionError
+import logging
 import os
 import os.path
+import socket
 import sys
 
 # 3rd party library imports
@@ -83,6 +85,7 @@ class ConfParse(object):
                 ############################
                 # rsslist
                 ############################
+                bozoexception = False
                 feeds = []
                 patterns = []
                 currentoption = 'uri_list'
@@ -93,7 +96,6 @@ class ConfParse(object):
                         sys.exit('The path to the uri_list parameter is not valid: {rssfile}'.format(rssfile=rssfile))
                     rsslist = open(rssfile, 'r').readlines()
                     for line in rsslist:
-                    #rsslist =  (i.strip() for i in rsslist if i)
                         line = line.strip()
                         # split each line in two parts, rss link and a string with the different patterns to look for
                         confobjects = line.split('|')
@@ -109,6 +111,10 @@ class ConfParse(object):
                         patterns = [i for i in patternstring.split(self.stringsep) if i]
                         # retrieve the content of the rss
                         feed = feedparser.parse(rss)
+                        if 'bozo_exception' in feed:
+                            bozoexception = True
+                            logging.warning(feed['bozo_exception'])
+                            continue
                         # check if the rss feed and the rss entry are valid ones
                         if 'entries' in feed:
                             if rssobject and rssobject not in feed['entries'][0].keys():
@@ -116,6 +122,9 @@ class ConfParse(object):
                         else:
                             sys.exit('The rss feed {rss} does not seem to be valid'.format(rss=rss))
                         feeds.append({'feed': feed, 'patterns': patterns, 'rssobject': rssobject})
+                    # test if all feeds in the list were unsuccessfully retrieved and if so, leave
+                    if not feeds and bozoexception:
+                        sys.exit('No feed could be retrieved. Leaving.')
                 ############################
                 # uri
                 ############################
@@ -124,14 +133,13 @@ class ConfParse(object):
                     if config.has_option(section, confoption):
                         options['rss_uri'] = config.get('rss', 'uri')
                     else:
-                        sys.exit('{confoption} parameter in the [{section}] section of the configuration file is mandatory. Exiting.'.format(section=section, confoptionn=confoption))
+                        sys.exit('{confoption} parameter in the [{section}] section of the configuration file is mandatory. Exiting.'.format(section=section, confoption=confoption))
                 else:
                     options['rss_uri'] = self.clioptions.rss_uri
                 # get the rss feed for rss parameter of [rss] section
                 feed = feedparser.parse(options['rss_uri'])
-
-                # Don't apply global filter for uri in the uri_list which does not have patterns
-
+                if not feed:
+                    sys.exit('Unable to parse the feed at the following url: {rss}'.format(rss=rss))
 
                 #########################################
                 # no_uri_pattern_no_global_pattern option

@@ -33,6 +33,7 @@ class TweetPost(object):
     def __init__(self, config, tweet):
         '''Constructore of the TweetPost class'''
         self.config = config
+        self.store = True
         self.tweet = tweet
         self.main()
 
@@ -47,8 +48,10 @@ class TweetPost(object):
         api = tweepy.API(auth)
         try:
             api.update_status(self.tweet)
-        except(tweepy.error.TweepError) as e:
-            logging.warning("Error occurred while updating status: %s", e)
-        else:
-            return True
+        except tweepy.TweepError as err:
+            logging.warning('Error occurred while updating status: {err}'.format(err=err))
+            self.store = False
 
+    def storeit(self):
+        '''Indicate if the tweet should be stored or not'''
+        return self.store

@@ -179,13 +179,16 @@ class Main(object):
                         else:
                             logging.debug('This rss entry did not meet pattern criteria. Should have not been sent')
                     else:
+                        storeit = True
                         if entrytosend and not clioptions.populate:
                             logging.debug('sending the following tweet:{tweet}'.format(tweet=finaltweet))
-                            TweetPost(config, finaltweet)
+                            twp = TweetPost(config, finaltweet)
+                            storeit = twp.storeit()
                         else:
                             logging.debug('populating RSS entry {}'.format(rss['id']))
                         # in both cas we store the id of the sent tweet
-                        cache.append(rss['id'])
+                        if storeit:
+                            cache.append(rss['id'])
                         # plugins
                         if plugins and entrytosend:
                             for plugin in plugins:
