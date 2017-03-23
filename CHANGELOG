@@ -1,7 +1,7 @@
  Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.0] - 2017-04-21
+## [1.0] - 2017-04-23
 ### Added
 - support for pattern matching for each feed in the uri_list file
 - syslog support, contributed by Antoine Beaupré
