@@ -42,7 +42,7 @@ setup(
     download_url='https://github.com/chaica/feed2tweet',
     packages=find_packages(),
     scripts=['scripts/feed2tweet'],
-    install_requires=['feedparser', 'persistentlist>=0.4', 'tweepy'],
+    install_requires=['feedparser', 'tweepy'],
     extras_require={
         'influxdb':  ["influxdb"]
     }

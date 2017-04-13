@@ -26,11 +26,11 @@ import sys
 
 # 3rd party libraries imports
 import feedparser
-from persistentlist import PersistentList
 import tweepy
 
 # app libraries imports
 from feed2tweet.addtags import AddTags
+from feed2tweet.feedcache import FeedCache
 from feed2tweet.cliparse import CliParse
 from feed2tweet.confparse import ConfParse
 from feed2tweet.filterentry import FilterEntry
@@ -74,8 +74,8 @@ class Main(object):
             tweetformat = conf[2]
             feeds = conf[3]
             plugins = conf[4]
-            # open the persistent list
-            cache = PersistentList(options['cachefile'][0:-3], options['cache_limit'])
+            # create link to the persistent list
+            cache = FeedCache(options)
             if options['hashtaglist']:
                 severalwordshashtags = codecs.open(options['hashtaglist'],
                                                    encoding='utf-8').readlines()
@@ -99,7 +99,7 @@ class Main(object):
                 # cache the ids of last rss feeds
                 if not clioptions.all:
                     for i in entries:
-                        if 'id' in i and i['id'] not in cache:
+                        if 'id' in i and i['id'] not in cache.getdeque():
                             totweet.append(i)
                 else:
                     totweet = entries

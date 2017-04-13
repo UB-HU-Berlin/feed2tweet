@@ -1,2 +1,1 @@
-persistentlist>=0.4
 tweepy>=3.5.0
