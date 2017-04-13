@@ -23,7 +23,7 @@ import logging
 import os.path
 import sys
 
-__version__ = '1.0'
+__version__ = '1.1'
 
 class CliParse(object):
     '''CliParse class'''

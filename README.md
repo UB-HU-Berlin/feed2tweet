@@ -20,7 +20,7 @@ Alternatively you can donate cryptocurrencies:
   [Installation Guide](http://feed2tweet.readthedocs.org/en/latest/install.html)*
 
 
-        # tar zxvf feed2tweet-1.0.tar.gz
+        # tar zxvf feed2tweet-1.1.tar.gz
         # cd feed2tweet
         # python3 setup.py install
         # # or
