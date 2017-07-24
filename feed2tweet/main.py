@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+'''Changes made: For HUUB:'''
+#add import of shortendTitle line 43
+#change a feeds title if it is too long line 167/168/169 
+
 """Checks an RSS feed and posts new entries to twitter."""
 
 # standard libraires imports
@@ -36,6 +40,7 @@ from feed2tweet.confparse import ConfParse
 from feed2tweet.filterentry import FilterEntry
 from feed2tweet.removeduplicates import RemoveDuplicates
 from feed2tweet.tweetpost import TweetPost
+from feed2tweet.shortenTitle import shortenTitle
 
 class Main(object):
     '''Main class of Feed2tweet'''
@@ -158,6 +163,11 @@ class Main(object):
                             if i.startswith('{') and i.endswith('}'):
                                 tmpelement = i.strip('{}')
                                 elements.append(tmpelement)
+                    
+                    #Shorten title if it is too long
+                    shorten = shortenTitle(elements, entry)             
+                    entry['title'] = shorten.shortendtitle
+                    
                     # match elements of the tweet format string with available element in the RSS feed
                     fe = FilterEntry(elements, entry, options, feed['patterns'], feed['rssobject'])
                     entrytosend = fe.finalentry
